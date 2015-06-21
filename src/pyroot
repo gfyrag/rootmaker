@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+
+from maker import RootMaker
+import os
+import time
+
+if __name__ == '__main__':
+	maker = RootMaker()
+	
+	print('Copy a file...')
+	maker.root().dir('etc').create().copy('/etc/resolv.conf')
+
+	print('Adding tar...')
+	file = open(os.path.abspath(os.path.dirname(__file__) + '/../examples/ubuntu.tar'), 'rb')
+	maker.root().unpack('tar', file)
+
+	print('Chmod a file...')
+	maker.root().dir('etc').file('resolv.conf').chmod(0o777).write("""
+nameserver 8.8.8.8
+""")
+	
+	print('Creating dir...')
+	maker.root().dir('etc').create()
+	
+	print('Creating a file sample with command...')
+	maker.chroot('touch /updatedRootFs')
+
+	print('Creating a block device...')
+	maker.root().dir('dev').block_device_file('test0', 50, 0).create()
+	
+	print('Creating a char device...')
+	maker.root().dir('dev').char_device_file('test1', 51, 0).create()
+	
+	print('Repackaging as tar...')
+	file = open('examples/ubuntu_update.tar', 'wb')
+	maker.root().pack('tar', file)
+
+	print('Rootfs size = %smo' % (maker.root().size() / 1024 / 1024))
+	print('Exporting rootfs')
+	# maker.dir('/').export('/tmp/exportedFs')
+	
+	print('OK')
+
