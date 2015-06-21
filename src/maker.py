@@ -21,7 +21,7 @@ class File:
 		return self
 
 	def size(self):
-		return os.stat(self.path).st_size
+		return int(subprocess.check_output(['du', '-shb', self.path]).split()[0].decode('utf-8'))
 
 	@abc.abstractmethod
 	def create(self, mode = 0o0777): pass
@@ -34,7 +34,10 @@ class File:
 		elif(stat.S_ISREG(statInfo.st_mode)):
 			return SimpleFile(path)
 		elif(stat.S_ISLNK(statInfo.st_mode)):
-			return SymlinkFile(path, os.path.realpath(absfilename))
+			try:
+				return SymlinkFile(path, os.path.realpath(path))
+			except:
+				return SymlinkFile(path, None)
 		elif(stat.S_ISBLK(statInfo.st_mode)):
 			# TODO : Get major/minor
 			return BlockDeviceFile(path, 0, 0)
@@ -62,12 +65,13 @@ class DeviceFile(File):
 		os.mknod(self.path, self.type|mode, device)
 		return self
 
-class BlockDeviceFile(File):
+
+class BlockDeviceFile(DeviceFile):
 
 	def __init__(self, path, major, minor):
 		DeviceFile.__init__(self, path, stat.S_IFBLK, major, minor)
 
-class CharDeviceFile(File):
+class CharDeviceFile(DeviceFile):
 
 	def __init__(self, path, major, minor):
 		DeviceFile.__init__(self, path, stat.S_IFCHR, major, minor)
@@ -95,9 +99,6 @@ class SymlinkFile(File):
 		self.target = target
 		File.__init__(self, path)
 
-	def size(self):
-		return 0
-
 class Directory(File):
 
 	def create(self, mode = 0o0777): 
@@ -115,19 +116,9 @@ class Directory(File):
 			try:
 				result.append(File.discover(absfilename))
 			except Exception as e:
-				print("Error while listing dir : %s" % absfilename)
+				print("Error while listing dir : %s (%s)" % (absfilename, e))
 
 		return result
-
-	def size(self):
-		total = 0
-		files = self.listdir()
-		for f in files:
-			size = f.size()
-			print("Size of %s : %s (%s)" % (f.path, size, type(f)))
-			total += size
-
-		return total
 
 	def export(self, path):
 		shutil.copytree(self.path, path)
