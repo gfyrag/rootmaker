@@ -105,7 +105,7 @@ class Directory(File):
 		os.makedirs(self.path, mode, True)
 		return self
 	
-	def copytree(self, path): 
+	def copytree(self, path):
 		shutil.copytree(path, self.path)
 		return self
 
@@ -121,7 +121,10 @@ class Directory(File):
 		return result
 
 	def export(self, path):
-		shutil.copytree(self.path, path)
+		# Weird behavior with device file
+		#print("Export %s to %s" % (self.path, path))
+		#shutil.copytree(self.path, path)
+		subprocess.check_output(['cp', '-rf', self.path, path])
 		return self
 
 	def copy(self, path):
