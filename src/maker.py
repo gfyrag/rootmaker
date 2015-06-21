@@ -7,6 +7,7 @@ import chroot
 import packer
 import shutil
 import abc
+import subprocess
 
 class File:
 	def __init__(self, path):
@@ -169,5 +170,7 @@ class RootMaker:
 	# Execute commands
 	def chroot(self, command):
 		with chroot.ChrootEnvironment(self.rootfs) as env:
-			return env.call(command)
+			def callback():
+				return subprocess.call(command, shell=True)
+			return env.call(callback)
 	

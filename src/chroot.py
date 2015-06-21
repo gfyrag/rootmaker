@@ -42,7 +42,7 @@ class ChrootEnvironment:
 		subprocess.check_call(['umount', self.mountpoint.name + '/etc/resolv.conf'])
 		subprocess.check_call(['umount', self.mountpoint.name])
 
-	def call(self, command):
+	def call(self, callback):
 		subprocesspid = os.fork()
 		if subprocesspid == 0: # We're in the child
 			os.chroot(self.mountpoint.name)
@@ -51,7 +51,7 @@ class ChrootEnvironment:
 
 			# Use os._exit() to not raising SystemExit and not called __exit__ of the ChrootEnvironment 
 			# for the subprocess (whill will result in an exception since paths it's the responsibility of the main process to handle this)
-			status = subprocess.call(command, shell=True)
+			status = callback()
 			os.close(newRoot)
 			os._exit(status)
 		else:

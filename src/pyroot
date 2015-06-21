@@ -35,7 +35,7 @@ nameserver 8.8.8.8
 	file = open('examples/ubuntu_update.tar', 'wb')
 	maker.root().pack('tar', file)
 
-	print('Rootfs size = %smo' % (maker.root().size() / 1024 / 1024))
+	#print('Rootfs size = %smo' % (maker.root().size() / 1024 / 1024))
 	print('Exporting rootfs')
 	# maker.dir('/').export('/tmp/exportedFs')
 	
