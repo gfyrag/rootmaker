@@ -17,7 +17,7 @@ class File:
 	def __str__(self):
 		return self.path
 
-	def parent(self):
+	def up(self):
 		return Directory(os.path.dirname(self.path))
 
 	def chmod(self, mode, recursive = False):
@@ -136,7 +136,7 @@ class Directory(File):
 		subprocess.check_output(['cp', '-rf', self.path, path])
 		return self
 
-	def copy(self, path, name = None):
+	def copy(self, path, enter = False, name = None):
 		if name == None:
 			filename = os.path.basename(path)
 		else:
@@ -152,7 +152,13 @@ class Directory(File):
 
 		scheme.factory(fileScheme).copy(path, finalPath)
 		
-		return File.discover(finalPath)
+		if(enter):
+			return File.discover(finalPath)
+		else:
+			return self
+
+	def in_copy(self, path, name = None):
+		return self.copy(path, enter = True, name = name)
 
 	def pack(self, format, fileobj):
 		packer.factory(format).pack(self.path, fileobj)
@@ -162,17 +168,57 @@ class Directory(File):
 		packer.factory(format).unpack(self.path, fileobj)
 		return self
 
-	def dir(self, path):
-		return Directory(self.path + '/' + path)
+	def dir(self, path, enter = False, create = True):
+		dir = Directory(self.path + '/' + path)
+		if create:
+			dir.create()
 
-	def file(self, name):
-		return SimpleFile(self.path + '/' + name)
+		if(enter):
+			return dir
+		else:
+			return self
 
-	def block_device_file(self, name, major, minor):
-		return BlockDeviceFile(self.path + '/' + name, major, minor)
+	def in_dir(self, path, create = True):
+		return self.dir(path, enter = True, create = create)
 
-	def char_device_file(self, name, major, minor):
-		return CharDeviceFile(self.path + '/' + name, major, minor)
+	def file(self, name, enter = False, create = True):
+		file = SimpleFile(self.path + '/' + name)
+		if create:
+			file.create()
+
+		if(enter):
+			return file
+		else: 
+			return self
+
+	def in_file(self, name, create = True):
+		return self.file(name, enter = True, create = create)
+
+	def block_device_file(self, name, major, minor, enter = False, create = True):
+		file = BlockDeviceFile(self.path + '/' + name, major, minor)
+		if create:
+			file.create()
+		
+		if(enter):
+			return file
+		else:
+			return self
+
+	def in_block_device_file(self, name, major, minor, create = True):
+		return self.block_device_file(name, major, minor, enter = True, create = create)
+
+	def char_device_file(self, name, major, minor, enter = False, create = True):
+		file = CharDeviceFile(self.path + '/' + name, major, minor)
+		if create:
+			file.create()
+
+		if(enter):
+			return file
+		else:
+			return self
+
+	def in_char_device_file(self, name, major, minor, create = True):
+		return self.char_device_file(name, major, minor, enter = True, create = create)
 
 class RootMaker:
 
