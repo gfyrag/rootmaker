@@ -11,33 +11,36 @@ if __name__ == '__main__':
 
 	print('Making tree...')
 	maker.root() \
+		.current_mode(0o755) \
 		.dir('selinux') \
 		.dir('home') \
 		.dir('root') \
-		.in_dir('etc').dir('init.d').up() \
+		.dir('etc/init.d') \
 		.dir('bin') \
 		.dir('sbin') \
 		.dir('proc') \
 		.dir('mnt') \
 		.dir('tmp') \
-		.in_dir('var').dir('log').up() \
+		.dir('var/log') \
 		.dir('lib') \
-		.in_dir('usr').dir('lib').dir('lib64').up() \
+		.dir('usr/lib') \
+		.dir('usr/lib64') \
 		.dir('lib64') \
-		.in_dir('dev').dir('shm').dir('pts') \
-		.char_device_file('tty', 5, 0) \
-		.in_char_device_file('console', 5, 1).chmod(0o666).up() \
-		.in_char_device_file('tty0', 4, 0).chmod(0o666).up() \
-		.char_device_file('tty1', 4, 0) \
-		.char_device_file('tty5', 4, 0) \
-		.in_block_device_file('ram0', 1, 0).chmod(0o600).up() \
-		.in_char_device_file('null', 1, 3).chmod(0o666).up() \
-		.up() \
-		.chmod(0o755, recursive = True) \
-		.in_dir('etc').in_file('passwd').write('''
+		.dir('dev/shm') \
+		.dir('dev/pts') \
+		.current_mode(0o666) \
+		.char_device_file('dev/tty', 5, 0) \
+		.char_device_file('dev/console', 5, 1) \
+		.char_device_file('dev/tty0', 4, 0) \
+		.char_device_file('dev/tty1', 4, 0) \
+		.char_device_file('dev/tty5', 4, 0) \
+		.block_device_file('dev/ram0', 1, 0) \
+		.char_device_file('dev/null', 1, 3) \
+		.current_mode(0o755) \
+		.in_file('etc/passwd').write('''
 			root:x:0:0:root:/root:/bin/sh
-		''').up().up() \
-		.in_dir('bin').in_copy('http://www.busybox.net/downloads/binaries/1.21.1/busybox-x86_64', name = 'busybox').chmod(0o755).up().up()
+		''').up() \
+		.in_dir('bin').in_copy('http://www.busybox.net/downloads/binaries/1.21.1/busybox-x86_64', name = 'busybox').up().up()
 
 	print('Creating busybox links...')
 	maker.chroot(['/bin/busybox', '--install', '-s', '/bin'])
