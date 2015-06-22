@@ -19,9 +19,6 @@ if __name__ == '__main__':
 nameserver 8.8.8.8
 """)
 	
-	print('Creating dir...')
-	maker.root().dir('etc').create()
-	
 	print('Creating a file sample with command...')
 	maker.chroot('touch /updatedRootFs')
 
@@ -31,14 +28,14 @@ nameserver 8.8.8.8
 	print('Creating a char device...')
 	maker.root().dir('dev').char_device_file('test1', 51, 0).create()
 	
-	print('Repackaging as tar...')
-	file = open('/tmp/ubuntu_repacked.tar', 'wb')
-	maker.root().pack('tar', file)
-
 	print('Rootfs size = %smo' % (maker.root().size() / 1024 / 1024))
 
 	print('Exporting rootfs... (%s)' % maker.root().path)
 	maker.root().export('/tmp/exportedFs')
+	
+	print('Repackaging as tar...')
+	file = open('/tmp/ubuntu_repacked.tar', 'wb')
+	maker.root().pack('tar', file)
 	
 	print('OK')
 

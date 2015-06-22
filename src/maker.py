@@ -8,6 +8,7 @@ import packer
 import shutil
 import abc
 import subprocess
+import scheme
 
 class File:
 	def __init__(self, path):
@@ -16,8 +17,16 @@ class File:
 	def __str__(self):
 		return self.path
 
-	def chmod(self, mode):
-		os.chmod(self.path, mode)
+	def parent(self):
+		return Directory(os.path.dirname(self.path))
+
+	def chmod(self, mode, recursive = False):
+		command = 'chmod '
+		if recursive:
+			command += '-Rf '
+		command += oct(mode)[2:] + ' ' + self.path
+		subprocess.check_output(command.split())
+		# os.chmod(self.path, mode)
 		return self
 
 	def size(self):
@@ -82,10 +91,10 @@ class SocketFile(File): pass
 
 class SimpleFile(File):
 
-	def create(self, mode = 0o0777):
-		with open(self.path, os.O_CREAT, mode = mode):
+	def create(self, mode = 0o777):
+		with open(self.path, 'w'):
 			pass
-		return self
+		return self.chmod(mode)
 
 	def write(self, data):
 		file = os.open(self.path, os.O_CREAT|os.O_WRONLY)
@@ -127,10 +136,23 @@ class Directory(File):
 		subprocess.check_output(['cp', '-rf', self.path, path])
 		return self
 
-	def copy(self, path):
-		filename = os.path.basename(path)
-		shutil.copy2(path, self.path + '/' + filename)
-		return self
+	def copy(self, path, name = None):
+		if name == None:
+			filename = os.path.basename(path)
+		else:
+			filename = name
+
+		parts = path.split('://')
+		if(len(parts) > 1):
+			fileScheme = parts[0]
+		else:
+			fileScheme = 'file'
+
+		finalPath = self.path + '/' + filename
+
+		scheme.factory(fileScheme).copy(path, finalPath)
+		
+		return File.discover(finalPath)
 
 	def pack(self, format, fileobj):
 		packer.factory(format).pack(self.path, fileobj)
@@ -165,6 +187,6 @@ class RootMaker:
 	def chroot(self, command):
 		with chroot.ChrootEnvironment(self.rootfs) as env:
 			def callback():
-				return subprocess.call(command, shell=True)
+				return subprocess.call(command, shell=False)
 			return env.call(callback)
 	
