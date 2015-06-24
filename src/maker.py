@@ -80,7 +80,7 @@ class File:
 class DeviceFile(File):
 
 	def __init__(self, path, type, major, minor, previous):
-		self.type = stat.S_IFBLK
+		self.type = type
 		self.major = major
 		self.minor = minor
 		File.__init__(self, path, previous)
