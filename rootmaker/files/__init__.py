@@ -1,16 +1,6 @@
-from .file import File
-from .devicefile import DeviceFile
-from .chardevicefile import CharDeviceFile
-from .blockdevicefile import BlockDeviceFile 
-from .directory import Directory
-from .fifofile import FIFOFile 
-from .simplefile import SimpleFile 
-from .socketfile import SocketFile 
-from .symlinkfile import SymlinkFile 
 import os
 import stat
 
-global discover
 def discover(path, previous):
 	statInfo = os.lstat(path)
 	if(stat.S_ISDIR(statInfo.st_mode)):
@@ -34,3 +24,13 @@ def discover(path, previous):
 		return SocketFile(path, previous)
 	else:
 		raise RuntimeError('File %s : Type unknown' % path)
+
+from .file import File
+from .devicefile import DeviceFile
+from .chardevicefile import CharDeviceFile
+from .blockdevicefile import BlockDeviceFile 
+from .directory import Directory
+from .fifofile import FIFOFile 
+from .simplefile import SimpleFile 
+from .socketfile import SocketFile 
+from .symlinkfile import SymlinkFile 

@@ -7,7 +7,7 @@ config = {
     'author_email': 'geoffrey.ragot@gmail.com',
     'version': '0.1',
     'install_requires': [],
-    'packages': ["src"],
+    'packages': ["rootmaker"],
     'scripts': [],
     'name': 'rootmaker'
 }
